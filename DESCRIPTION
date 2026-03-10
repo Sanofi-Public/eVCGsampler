@@ -1,7 +1,7 @@
 Package: eVCGsampler
 Type: Package
 Title: VCG Sampling using Energy-Based Covariate Balancing
-Version: 0.9.5
+Version: 1.0.0
 Authors@R: c(
     person(
       "Andreas", "Schulz",
@@ -17,6 +17,6 @@ URL: https://github.com/Sanofi-Public/eVCGsampler
 Encoding: UTF-8
 RoxygenNote: 7.3.3
 Depends: ggplot2
-Imports: ggforce, osqp, patchwork 
+Imports: ggforce, osqp, patchwork, shiny
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
