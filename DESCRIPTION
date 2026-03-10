@@ -1,6 +1,6 @@
 Package: eVCGsampler
 Type: Package
-Title: VCG Sampling using Energy-Based Covariate Balancing.
+Title: VCG Sampling using Energy-Based Covariate Balancing
 Version: 1.0.0
 Authors@R: c(
     person(
