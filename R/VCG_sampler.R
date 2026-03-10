@@ -106,7 +106,7 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
     diag(P) <- diag(P) + 1e-4 * w0^2 / 2
 
     # Solve with OSQP
-    settings <- osqp::osqpSettings(eps_abs = 1e-8, eps_rel = 1e-6, max_iter = 5e4, polish = TRUE, verbose = FALSE)
+    settings <- osqp::osqpSettings(eps_abs = 1e-8, eps_rel = 1e-6, max_iter = 5e4, polishing = TRUE, verbose = FALSE)
     result   <- osqp::solve_osqp(P = 2 * P, q = q, A = t(Amat), l = lvec, u = uvec, pars = settings)
 
     wout <- rep(1, n)
