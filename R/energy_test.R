@@ -108,11 +108,11 @@ energy_test <- function(formula, data, alpha=0.05, R=2000, plot=TRUE){
                        color = "white") +
         geom_vline(xintercept = range,      color = "#FE7500", linewidth = 1.2) +
         geom_vline(xintercept = obs_dists,  color = "#00A091", linewidth = 1.2) +
-        scale_x_continuous(name = "Energy Distance", limits = c(min(c(obs_dists, dists)), max(c(obs_dists, dists)))) +
+        scale_x_continuous(name = "Energy Distance") +
         theme_minimal() +
-        theme(plot.margin = ggplot2::margin(1, 0.5, 0.5, 0.5, "cm"), plot.subtitle = element_text(margin = ggplot2::margin(b = 15))) +
+        theme(plot.margin = ggplot2::margin(1.3, 0.5, 0.5, 0.5, "cm"), plot.subtitle = element_text(margin = ggplot2::margin(b = 18))) +
         labs(title="Permutation test", subtitle = paste('p-value: ', signif(p_value, digits=3))) +
-        coord_cartesian(clip = "off") +
+        coord_cartesian(clip = "off", xlim = c(min(c(obs_dists, dists)), max(c(obs_dists, dists)))) +
         annotate("text", x = range, y = Inf, label = paste0((1-alpha) * 100, "%: ", round(range, 2)),
                  vjust = -1.2, color = "#FE7500", size = 4) +
         annotate("text", x = obs_dists, y = Inf, label = round(obs_dists, 2),
