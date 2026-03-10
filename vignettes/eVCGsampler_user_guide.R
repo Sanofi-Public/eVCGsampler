@@ -4,6 +4,13 @@ library(knitr)
 
 
 
+## ----echo=TRUE, warning=FALSE-------------------------------------------------
+
+# Start the shiny app for VCG generation for data that can be uploaded in csv or xlsx format.
+# eVCGsampler::launchApp()
+
+
+
 ## ----echo=TRUE, warning=FALSE, fig.dim = c(6, 6)------------------------------
 
 # Generate data POOL (n=100) to sample from
