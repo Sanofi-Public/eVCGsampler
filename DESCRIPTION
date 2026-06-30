@@ -18,5 +18,5 @@ Encoding: UTF-8
 RoxygenNote: 7.3.3
 Depends: ggplot2
 Imports: ggforce, osqp, patchwork, shiny
-Suggests: knitr, rmarkdown
+Suggests: knitr, rmarkdown, testthat (>= 3.0.0)
 VignetteBuilder: knitr
