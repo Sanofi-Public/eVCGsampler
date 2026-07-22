@@ -68,8 +68,8 @@ combine_variables <- function(formula, data, weights = NULL) {
     warning('NA values present in the data. Rows with NA will have NA in the result.')
   }
 
-  # Scale variables (mean=0, sd=1)
-  data_scaled <- scale(data_subset)
+  # Scale variables robustly (median=0, MAD=1; SD fallback when MAD==0)
+  data_scaled <- robust_scale(data_subset)
 
   # Set default weights if not provided
   if (is.null(weights)) {

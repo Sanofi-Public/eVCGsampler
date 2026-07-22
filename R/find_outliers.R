@@ -88,8 +88,8 @@ find_outliers <- function(formula, data, cutoff = 0.99, R = 500, plot = TRUE) {
   if (n_groups < 2) stop("At least two groups are required for comparison.")
   if (n_groups < 3) warning("With only 2 groups, outlier detection is not meaningful.")
 
-  # Scale covariates (mean=0, sd=1)
-  data[, vars] <- scale(data[, vars])
+  # Scale covariates robustly (median=0, MAD=1; SD fallback when MAD==0)
+  data[, vars] <- robust_scale(data[, vars])
 
   # Compute full Euclidean distance matrix ONCE (efficient approach)
   all_covs <- as.matrix(data[, vars, drop = FALSE])
