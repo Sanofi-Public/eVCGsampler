@@ -36,7 +36,7 @@ energy_distance <- function(formula, data, standardized=TRUE){
       if(any(is.na(data))) warning('NA values were removed from the data frame.')
       data <- na.omit(data[,c(leftpart,vars)])
 
-      data[,vars] <- scale(data[,vars])
+      data[,vars] <- robust_scale(data[,vars])
       lvl         <- levels(factor(as.factor(data[,leftpart])))
       X           <- data[which(data[,leftpart]==lvl[1]),vars]
       Y           <- data[which(data[,leftpart]==lvl[2]),vars]

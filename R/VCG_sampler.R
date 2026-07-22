@@ -54,12 +54,21 @@
 VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
   x0 <- y0 <- a <- b <- angle <- x <- y <- xend <- yend <- label <- NULL
 
+  # Shorten long covariate names for plotting: 8 starting chars + '_' + 2 last chars
+  abbrev_names <- function(x) {
+    long <- nchar(x) > 11
+    if(any(long)){
+      x[long] <- paste0(substr(x[long], 1, 8), '_', substr(x[long], nchar(x[long]) - 1, nchar(x[long])))
+      warning('Covariate names were cut to 8 starting characters + "_" + 2 last characters.')
+    }
+    x
+  }
+
   if(!is.null(c_w)){
     c_w <- c_w[which(!is.na(c_w))]
     c_w <- c_w[which(is.finite(c_w))]
     if(length(c_w)<2) c_w <- NULL
   }
-
 
   energy_sampler_w <- function(covs, treat, c_w = NULL, w = NULL, scale=TRUE) {
     n <- length(treat)
@@ -70,7 +79,7 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
     if (is.null(w)) w <- rep(1, n)
 
     # Scale covariates
-    if(scale) covs <- scale(covs)
+    if(scale) covs <- robust_scale(covs)
 
     if(!is.null(c_w)){
       if(length(c_w)!=Filter(Negate(is.null), c(ncol(covs), 1))[1]) stop('Length of covariate weight (c_w) must be the same as number of cols in covs')
@@ -106,7 +115,7 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
     diag(P) <- diag(P) + 1e-4 * w0^2 / 2
 
     # Solve with OSQP
-    settings <- osqp::osqpSettings(eps_abs = 1e-8, eps_rel = 1e-6, max_iter = 5e4, polish = TRUE, verbose = FALSE)
+    settings <- osqp::osqpSettings(eps_abs = 1e-8, eps_rel = 1e-6, max_iter = 5e4, polishing = TRUE, verbose = FALSE)
     result   <- osqp::solve_osqp(P = 2 * P, q = q, A = t(Amat), l = lvec, u = uvec, pars = settings)
 
     wout <- rep(1, n)
@@ -120,6 +129,48 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
   fparts   <- all.names(as.formula(formula))
   leftpart <- fnames[1]   # The response variable
   vars     <- fnames[-1]  # Exclude the response variable
+
+  # Sanity warnings on the requested balancing problem (top-level call only, so
+  # they are not repeated by the internal per-stratum recursive calls)
+  this_fun  <- sys.function()
+  top_level <- sum(vapply(seq_len(sys.nframe()),
+                          function(i) identical(sys.function(i), this_fun),
+                          logical(1))) <= 1
+
+  if(top_level){
+    warn_balance <- function(n_cov, n_pool, n_vcg, where = '') {
+      lbl <- if(nzchar(where)) paste0(' in stratum "', where, '"') else ''
+      if(n_cov > 21)
+        warning('You are trying to balance ', n_cov, ' covariates', lbl, '. It is almost always not a good idea to balance that many covariates; better select the important ones to reduce the number. Every additional covariate adds cost to the balancing and tends to make it worse or even impossible.')
+      if(n_pool / n_cov < 5)
+        warning('The ratio of POOL size to number of covariates is ', round(n_pool / n_cov, 2), lbl, ' (POOL size = ', n_pool, ', covariates = ', n_cov, '). For that many covariates your POOL size may be too small.')
+      if(n_vcg >= 0.75 * n_pool)
+        warning('The requested VCG size (', n_vcg, ') is >= 75% of the POOL size (', n_pool, ')', lbl, '. You are trying to select a large proportion of the POOL; there is limited degree of freedom for subject subselection.')
+    }
+
+    strat_vars <- character(0)
+    if(any(fparts=='|')){
+      strat_vars <- strsplit(as.character(as.formula(formula))[3], "\\|")[[1]]
+      strat_vars <- trimws(strsplit(strat_vars[2], "\\+")[[1]])
+    }
+    n_cov <- length(setdiff(vars, strat_vars))
+
+    if(any(fparts=='|')){
+      strata_f <- interaction(data[strat_vars])
+      s_levels <- levels(strata_f)
+      s_sizes  <- table(strata_f)
+      n_str    <- if(length(n)==length(s_levels)) n else rep(n[1], length(s_levels))
+      for(k in seq_along(s_levels)){
+        in_k   <- which(strata_f==s_levels[k])
+        pool_k <- sum(data[in_k, leftpart] == 0, na.rm = TRUE)
+        warn_balance(n_cov, pool_k, n_str[k], where = s_levels[k])
+      }
+      if(min(s_sizes) < 0.1 * max(s_sizes))
+        warning('Stratum sizes are strongly imbalanced (smallest = ', min(s_sizes), ' in stratum "', names(s_sizes)[which.min(s_sizes)], '", largest = ', max(s_sizes), ' in stratum "', names(s_sizes)[which.max(s_sizes)], '"). One stratum group is very small, which makes balancing within it unreliable.')
+    }else{
+      warn_balance(n_cov, sum(data[, leftpart] == 0, na.rm = TRUE), sum(n))
+    }
+  }
 
   if(any(fparts=='|')){
     stratum <- strsplit(as.character(as.formula(formula))[3], "\\|")[[1]]
@@ -195,7 +246,7 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
 
       for(k in 1:nlevels(data$in_stratum)){
         arrows <- data.frame(
-          label = paste0(substr(vars, 1, 10), ' (', levels(data_out$in_stratum)[k], ')'),
+          label = paste0(abbrev_names(vars), ' (', levels(data_out$in_stratum)[k], ')'),
           x =    median_diff(data_out[which(data_out$in_stratum==levels(data_out$in_stratum)[k]), ], lvls, leftpart, vars),
           y =    mad_diff(data_out[which(data_out$in_stratum==levels(data_out$in_stratum)[k]), ],   lvls,  leftpart, vars),
           xend = median_diff(data_out[which(data_out$in_stratum==levels(data_out$in_stratum)[k]), ], lvls, paste0(leftpart, '_balanced'), vars),
@@ -292,7 +343,7 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
 
       # Define points
       arrows <- data.frame(
-        label = substr(vars, 1, 10),
+        label = abbrev_names(vars),
         x = median_diff(data_0, lvls, leftpart, vars),
         y = mad_diff(data_0, lvls,  leftpart, vars),
         xend = median_diff(data, lvls, paste0(leftpart, '_balanced'), vars),

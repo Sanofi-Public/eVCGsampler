@@ -4,13 +4,14 @@
 \alias{robust_scale}
 \title{Robust Scaling of Numeric and Categorical Variables}
 \usage{
-robust_scale(x, group)
+robust_scale(x, group = NULL)
 }
 \arguments{
 \item{x}{A numeric vector, factor, matrix, or data frame. If a matrix or data frame is provided, scaling is applied
 column-wise.}
 
-\item{group}{vector indicating which group is the TG to scale to}
+\item{group}{Optional vector indicating which group is the TG to scale to. If `NULL` (default),
+centering and scaling are computed from all observations.}
 }
 \value{
 A scaled numeric vector or a data frame with scaled columns.

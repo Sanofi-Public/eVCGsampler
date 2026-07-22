@@ -32,6 +32,17 @@ Unlike traditional matching or weighting approaches, no specific downstream anal
 
 Please note that this method does not replace careful pre-filtering of historical control data to make it comparable to your study data, but rather serves as a final refinement step at the end of VCG generation. It reduces biological heterogeneity but does not address technical heterogeneity or differences caused by variations in data collection methods, processing pipelines, or experimental conditions. 
 
+# Shiny app
+
+You can perform the sampling using the built-in Shiny app included in the package.
+
+```{r, echo=TRUE, warning=FALSE}
+
+# Start the shiny app for VCG generation for data that can be uploaded in csv or xlsx format.
+# eVCGsampler::launchApp()
+
+
+```
 
 # Balancing of one covariate
 

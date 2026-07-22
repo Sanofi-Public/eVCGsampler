@@ -5,7 +5,8 @@
 #' @param x A numeric vector, factor, matrix, or data frame. If a matrix or data frame is provided, scaling is applied
 #'          column-wise.
 #'
-#' @param group vector indicating which group is the TG to scale to
+#' @param group Optional vector indicating which group is the TG to scale to. If `NULL` (default),
+#'          centering and scaling are computed from all observations.
 #' @return A scaled numeric vector or a data frame with scaled columns.
 #' @details This function is designed to make numeric and categorical variables comparable.
 #' This is an internal function that should not be used by package users.
@@ -23,21 +24,25 @@
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
-robust_scale <- function(x, group) {
+robust_scale <- function(x, group = NULL) {
   #if (!is.numeric(x)) stop("Input must be numeric.")
   if (is.matrix(x) || is.data.frame(x)) {
     x <- as.data.frame(x)
     return(as.data.frame(lapply(x, robust_scale, group)))
   }
   nn <- length(unique(x))
-  group <- as.factor(group)
-  lvl2  <- levels(group)[2]
+  if(is.null(group)){
+    idx <- seq_along(x)
+  }else{
+    group <- as.factor(group)
+    idx   <- which(group == levels(group)[2])
+  }
 
   if(nn>4){
     x <- as.numeric(x)
-    x <- x - median(x[which(group==lvl2)], na.rm = TRUE)
-    mad_val <- mad(x[which(group==lvl2)], na.rm = TRUE)
-    if(mad_val == 0) mad_val <- sd(x[which(group==lvl2)], na.rm = TRUE)
+    x <- x - median(x[idx], na.rm = TRUE)
+    mad_val <- mad(x[idx], na.rm = TRUE)
+    if(mad_val == 0) mad_val <- sd(x[idx], na.rm = TRUE)
     x <- x / mad_val
   }
   if(nn==2){
