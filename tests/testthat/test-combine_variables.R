@@ -19,7 +19,7 @@ test_that("combine_variables higher weight increases variable contribution", {
   dat <- data.frame(x = rnorm(50), y = rnorm(50))
   r_eq  <- combine_variables(1 ~ x + y, data = dat, weights = c(1, 1))
   r_wt  <- combine_variables(1 ~ x + y, data = dat, weights = c(5, 1))
-  x_scaled <- as.numeric(scale(dat$x))
+  x_scaled <- as.numeric(robust_scale(dat$x))
   expect_true(cor(r_wt, x_scaled) > cor(r_eq, x_scaled))
 })
 
