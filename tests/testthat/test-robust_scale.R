@@ -60,3 +60,13 @@ test_that("robust_scale data frame: each column is independently scaled", {
   expect_true(abs(median(res$x[tg_idx])) < 0.05)
   expect_true(abs(median(res$y[tg_idx])) < 0.05)
 })
+
+test_that("robust_scale ignores NA when detecting binary variables", {
+  expect_equal(robust_scale(c(0, 1, NA, 0, 1)), c(-0.675, 0.675, NA, -0.675, 0.675))
+})
+
+test_that("robust_scale does not return Inf/NaN for a constant reference group", {
+  x <- c(1:10, rep(5, 5))
+  res <- robust_scale(x, group = rep(0:1, c(10, 5)))
+  expect_true(all(is.finite(res)))
+})

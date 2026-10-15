@@ -1,7 +1,7 @@
 Package: eVCGsampler
 Type: Package
 Title: VCG Sampling using Energy-Based Covariate Balancing
-Version: 1.1.2
+Version: 1.2.0
 Authors@R: c(
     person(
       "Andreas", "Schulz",
@@ -18,5 +18,6 @@ Encoding: UTF-8
 RoxygenNote: 7.3.3
 Depends: ggplot2
 Imports: ggforce, osqp, patchwork, shiny
-Suggests: knitr, rmarkdown, testthat (>= 3.0.0)
+Suggests: bslib, DT, glue, knitr, openxlsx, readxl, rmarkdown, shinycssloaders,
+    shinyhelper, shinyjs, testthat (>= 3.0.0)
 VignetteBuilder: knitr

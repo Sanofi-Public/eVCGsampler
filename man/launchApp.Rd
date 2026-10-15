@@ -2,12 +2,22 @@
 % Please edit documentation in R/launchApp.R
 \name{launchApp}
 \alias{launchApp}
-\title{@title Launch the Shiny App}
+\title{Launch the Shiny App}
 \usage{
-launchApp()
+launchApp(...)
+}
+\arguments{
+\item{...}{Further arguments passed to \code{\link[shiny]{runApp}}, e.g. \code{port} or \code{launch.browser}.}
 }
 \description{
-@title Launch the Shiny App
+Starts the interactive eVCGsampler app: upload the POOL and TG data,
+choose the covariates and strata, run the pre-tests, draw the VCG and download
+an HTML report and the sampled data.
+}
+\details{
+The app needs some packages that are not required by the rest of eVCGsampler
+(listed under Suggests). Missing ones are reported together with the command to install them.
+Rendering the HTML report additionally needs pandoc (it ships with RStudio).
 }
 \examples{
 \dontrun{

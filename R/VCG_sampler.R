@@ -154,6 +154,8 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
       strat_vars <- trimws(strsplit(strat_vars[2], "\\+")[[1]])
     }
     n_cov <- length(setdiff(vars, strat_vars))
+    # The pool is the first level of the group variable (0 for 0/1, "POOL" for combine_data())
+    pool_lvl <- levels(as.factor(data[, leftpart]))[1]
 
     if(any(fparts=='|')){
       strata_f <- interaction(data[strat_vars])
@@ -162,13 +164,13 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
       n_str    <- if(length(n)==length(s_levels)) n else rep(n[1], length(s_levels))
       for(k in seq_along(s_levels)){
         in_k   <- which(strata_f==s_levels[k])
-        pool_k <- sum(data[in_k, leftpart] == 0, na.rm = TRUE)
+        pool_k <- sum(as.character(data[in_k, leftpart]) == pool_lvl, na.rm = TRUE)
         warn_balance(n_cov, pool_k, n_str[k], where = s_levels[k])
       }
       if(min(s_sizes) < 0.1 * max(s_sizes))
         warning('Stratum sizes are strongly imbalanced (smallest = ', min(s_sizes), ' in stratum "', names(s_sizes)[which.min(s_sizes)], '", largest = ', max(s_sizes), ' in stratum "', names(s_sizes)[which.max(s_sizes)], '"). One stratum group is very small, which makes balancing within it unreliable.')
     }else{
-      warn_balance(n_cov, sum(data[, leftpart] == 0, na.rm = TRUE), sum(n))
+      warn_balance(n_cov, sum(as.character(data[, leftpart]) == pool_lvl, na.rm = TRUE), sum(n))
     }
   }
 
@@ -179,6 +181,7 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
     vars    <- vars[which(!vars%in%stratum)]
     data$in_stratum <- interaction(data[stratum])
     if(nlevels(data$in_stratum)>8) stop('Too many strata, a maximum of 8 are allowed!')
+    data$.row_id <- seq_len(nrow(data))
     if(length(n)!=nlevels(data$in_stratum)) n <- n[1]
     if(length(n)==1) n <- rep(n, nlevels(data$in_stratum))
     new_formula <- as.formula(paste(leftpart, '~', paste(vars, collapse='+')))
@@ -189,6 +192,17 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
       out    <- VCG_sampler(new_formula, data=data_k, n=n[k], c_w=c_w, random=random, plot=FALSE)
       data_out <- rbind(data_out, out)
     }
+    # Rows with a missing stratum are not sampled, but are returned like rows with missing covariates
+    no_stratum <- data[which(!data$.row_id %in% data_out$.row_id), ]
+    if(nrow(no_stratum) > 0){
+      no_stratum$VCG <- NA
+      no_stratum$e_weights <- NA
+      no_stratum[[paste0(leftpart, '_balanced')]] <- factor(NA, levels = levels(data_out[[paste0(leftpart, '_balanced')]]))
+      data_out <- rbind(data_out, no_stratum)
+    }
+    data_out <- data_out[order(data_out$.row_id), ]
+    data_out$.row_id <- NULL
+    rownames(data_out) <- NULL
     data_save    <- data_out
 
     if(plot){
@@ -281,6 +295,10 @@ VCG_sampler <- function(formula, data, n, c_w=NULL, random=FALSE, plot=TRUE){
     lvls <-  levels(data[, leftpart])
     if(length(lvls) != 2) stop('The left part of the formula must be a binary variable')
     data$VCG[which(data[, leftpart]==lvls[1])] <- 0
+    n_pool <- sum(data[, leftpart]==lvls[1])
+    if(n_pool == 0 || sum(data[, leftpart]==lvls[2]) == 0) stop('Both groups (POOL and TG) need at least one complete observation.')
+    if(length(n) != 1 || is.na(n) || n < 1 || n != round(n)) stop('n must be a single positive whole number.')
+    if(n > n_pool) stop('The requested VCG size (', n, ') is larger than the number of POOL observations with complete data (', n_pool, ').')
 
     weights <- energy_sampler_w(data[,vars], data[,leftpart], c_w=c_w, scale = TRUE)
     data$e_weights <- weights

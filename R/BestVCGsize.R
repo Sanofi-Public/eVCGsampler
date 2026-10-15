@@ -34,9 +34,10 @@ BestVCGsize <- function(formula, data=data, plot=TRUE){
 
   # Function to find plateau using t-tests
   find_increase <- function(data, alpha = 0.05, maxN) {
+    if(nrow(data) < 5) return(NA)
     pval <- slope <- rep(NA, nrow(data)-2)
     for (i in 3:(nrow(data)-2)) {
-      fit     <- summary(lm(distance ~ n, data=data[i:min(i+round(maxN/10), nrow(data)), ]))
+      fit     <- summary(lm(distance ~ n, data=data[i:min(i+max(2, round(maxN/10)), nrow(data)), ]))
       pval[i] <- fit$coef[2, 4]
       slope[i] <- fit$coef[2, 1]
     }
@@ -45,6 +46,7 @@ BestVCGsize <- function(formula, data=data, plot=TRUE){
   }
   # Function to find plateau using t-tests
   find_plateau <- function(data, alpha = 0.05) {
+    if(nrow(data) < 3) return(NA)
     pval <- slope <- rep(NA, nrow(data)-2)
     for (i in 1:(nrow(data)-2)) {
       fit     <- summary(lm(distance ~ n, data=data[i:nrow(data), ]))
@@ -77,18 +79,21 @@ BestVCGsize <- function(formula, data=data, plot=TRUE){
 
     for(k in 1:nlevels(data$in_stratum)){
       data_k <- data[which(data$in_stratum==levels(data$in_stratum)[k]), ]
-      maxN     <- table(data_k[,leftpart])[1]
+      data_k <- na.omit(data_k[, c(leftpart, vars)])
+      maxN     <- unname(table(data_k[,leftpart])[1])
+      if(is.na(maxN) || maxN < 1) stop('No complete POOL observations in stratum "', levels(data$in_stratum)[k], '".')
       Dist     <- rep(NA, maxN)
       Ns <- 1:maxN
       for(i in 1:maxN){
-        out     <- VCG_sampler(new_formula, data=data_k, n=Ns[i], plot=FALSE)
+        # The size sanity warnings of VCG_sampler() are expected here, as every size up to the full POOL is tried
+        out     <- suppressWarnings(VCG_sampler(new_formula, data=data_k, n=Ns[i], plot=FALSE))
         Dist[i] <- energy_distance(f2, data=na.omit(out[, c(paste0(leftpart, '_balanced'), vars)]))
       }
       df <- data.frame(distance=Dist, n=Ns, stratum=levels(data$in_stratum)[k])
       mn <- find_increase(df, maxN=maxN)
       if(!is.na(mn)) df <- df[1:mn, ]
       plateau  <- find_plateau(df)
-      if(plateau<3) plateau <- NA
+      if(is.na(plateau) || plateau<3) plateau <- NA
       best_n <- NA
       if(!is.na(plateau)) best_n <- df$n[plateau]
       cuts[k] <- best_n
@@ -117,12 +122,14 @@ BestVCGsize <- function(formula, data=data, plot=TRUE){
   }else{
 
     f2       <- as.formula(paste0(leftpart_b, '~', paste(vars, collapse='+')))
-    maxN     <- table(data[,leftpart])[1]
+    data     <- na.omit(data[, c(leftpart, vars)])
+    maxN     <- unname(table(data[,leftpart])[1])
+    if(is.na(maxN) || maxN < 1) stop('No complete POOL observations found.')
     Dist     <- rep(NA, maxN)
     Ns       <- 1:maxN
-    data     <- na.omit(data[, c(leftpart, vars)])
     for(i in 1:maxN){
-      out     <- VCG_sampler(formula, data=data, n=Ns[i], plot=FALSE)
+      # The size sanity warnings of VCG_sampler() are expected here, as every size up to the full POOL is tried
+      out     <- suppressWarnings(VCG_sampler(formula, data=data, n=Ns[i], plot=FALSE))
       Dist[i] <- energy_distance(f2, data=na.omit(out[, c(leftpart_b, vars)]))
     }
 
@@ -130,7 +137,8 @@ BestVCGsize <- function(formula, data=data, plot=TRUE){
     mn  <- find_increase(df, maxN=maxN)
     if(!is.na(mn)) df       <- df[1:mn, ]
     plateau  <- find_plateau(df)
-    if(plateau<3) plateau <- NA
+    if(is.na(plateau) || plateau<3) plateau <- NA
+    optimal_n <- if(is.na(plateau)) NA_integer_ else df$n[plateau]
 
     if(plot){
       p <- ggplot(df, aes(x = n, y = distance)) +
@@ -144,9 +152,9 @@ BestVCGsize <- function(formula, data=data, plot=TRUE){
              x = "VCG size (n)", y = "Energy distance") +
         theme_minimal() +
         scale_x_continuous(breaks = seq(1, max(df$n), by = 2))
-      return(list(optimal_n=df$n[plateau], p))
+      return(list(optimal_n=optimal_n, p))
     }
-    return(optimal_n=df$n[plateau])
+    return(optimal_n)
   }
 }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#

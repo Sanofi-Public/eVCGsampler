@@ -1,0 +1,1333 @@
+/*@import './custom.scss';*/
+@import './hack.scss';
+
+/* =====================  */ 
+/* ===== Variables =====  */ 
+/* =====================  */ 
+$primary: #7A00E6;
+$primary-light: #f8f2fe;
+$primary-dark: #23004C;
+$error: #DC3545;
+$success: #2BB636;
+$support-grey: #F4F2F6;
+$support-white: #FFFFFF;
+$border-grey: #E4E4E4;
+$font-white: #F5F5F5;
+$font-grey: #BBBAC6;
+$font-black: #000000;
+
+/* =====================  */ 
+/* ===== Utilities =====  */ 
+/* =====================  */ 
+
+/* Screen full height */
+.full-screen-home {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+}
+// Viewport minus the 54px header (there is no footer bar)
+.full-screen {
+    min-height: calc(100vh - 54px);
+}
+
+a[disabled] {
+    pointer-events: none;
+    color: #333;
+    text-decoration: none;
+}
+
+.mt-up {
+    margin-top: -16px;
+}
+
+.fadeout:not(.shinyjs-hide) {
+    animation-name: fadeOut;
+    animation-duration: 0.6s;
+    animation-delay: 4s;
+    animation-fill-mode: forwards;
+}
+@keyframes fadeOut {
+  from {opacity: 1;}
+  to {opacity: 0;}
+}
+
+
+.shiny-notification {
+    position: absolute;
+    width: 400px;
+    margin-left: -200px;
+    bottom: 100px;
+    left: -500px;
+}
+
+
+/* ========================  */ 
+/* ========= Help =========  */ 
+/* ========================  */ 
+
+// Top right of the header, vertically centred in it
+#help {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    margin-top: -18px;
+    width: 36px;
+    height: 36px;
+    border-radius: 36px;
+    background: #23004C;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 42px;
+    vertical-align: center;
+    text-align: center;
+}
+
+
+
+
+#help .shinyhelper-wrapper {
+    position: static;
+}
+
+#help .shinyhelper-container,
+#help .shinyhelper-container i {
+    opacity: 0;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    right: 0;
+}
+
+.input-with-helper {
+    .shinyhelper-wrapper {
+        .shinyhelper-icon {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+    }
+}
+
+
+/* ========================  */ 
+/* ======== Modal =========  */ 
+/* ========================  */ 
+.modal-content {
+    max-height: calc(100vh - 56px);
+    overflow: auto;
+    border-radius: 0;
+}
+.modal-title {
+    margin-top: 0;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+
+/* ========================  */ 
+/* ===== Typographies =====  */ 
+/* ========================  */ 
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ========================  */ 
+/* ======== Layout =======  */ 
+/* ========================  */
+
+.card-margins {
+    margin-top: 100px;
+    margin-bottom: 135px;
+}
+
+@media (min-width: 768px) {
+    .max-width-18 {
+        max-width: 18%;
+    }
+}
+
+/* ========================  */ 
+/* ======== Logo =======  */ 
+/* ========================  */
+
+.logo {
+    cursor: pointer;
+}
+
+/* ==========================  */ 
+/* ======== SCROLLBAR =======  */ 
+/* ==========================  */
+
+::-webkit-scrollbar {
+  width: 11px;
+  background: $support-grey;
+}
+ 
+::-webkit-scrollbar-thumb {
+  background-color: $primary;
+  border: 3px solid $support-grey;
+}
+
+
+
+/* ========================  */ 
+/* ======== Output =======  */ 
+/* ========================  */
+    
+.container-output {
+    border: 1px solid $font-grey;
+    min-height: 300px;
+}
+
+.header-output {
+    padding: 20px 60px;
+    background: $support-grey;
+    h4 {
+        font-size: 30px;
+        font-weight: bold;
+    }
+    .form-group {
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+.shiny-html-output {
+    padding: 15px;
+    overflow-x: auto;
+}
+
+.dataTables_wrapper {
+    padding: 0 0 15px;
+    overflow-x: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    &.dt-bootstrap {
+        padding-left: 12px;
+        padding-right: 12px;
+        display: block;
+        > .row {
+            &:first-child {
+                background: $support-grey;
+            }
+        }
+    }
+    table {
+        padding: 15px;
+    }
+    .dataTables_length {
+        padding: 15px;
+        flex-grow: 1;
+        background: $support-grey;
+        padding-left: 60px;
+    }
+    .dataTables_filter {
+        padding: 15px;
+        background: $support-grey;
+    }
+    .dataTables_length,
+    .dataTables_filter {
+        input, select {
+            background: #fff;
+        }
+    }
+    .dataTables_info {
+        padding-left: 60px;
+    }
+    .dataTables_paginate {
+        margin-left: auto;
+        margin-right: 15px;
+        .paginate_button {
+            background: none !important;
+            border: none !important;
+            &.current {
+                font-weight: bold;
+                color: $font-black;
+            }
+            &.disabled:hover,
+            &:not(.current) {
+                text-decoration: underline !important;
+                color: $primary !important;
+            }
+            &:hover {
+                color: $font-black !important;
+                text-decoration: none !important;
+            }
+        }
+    }
+    
+}
+
+
+/* ========================  */ 
+/* ======== Buttons =======  */ 
+/* ========================  */
+.btn {
+    text-transform: uppercase;
+}
+
+/* .btn-check:checked+.btn, :not(.btn-check)+.btn:active, .btn:first-child:active, .btn.active, .btn.show, .btn.in {*/
+/*     color: $support-white;*/
+/*     background-color: $primary;*/
+/*     border-radius: 0px;*/
+    /* border-color: var(--bs-btn-active-border-color); */
+/* }*/
+
+.well {
+    background-color: #FFF;
+    border-color: $primary;
+}
+
+
+.shiny-input-container>div>select:not(.selectized) {
+    width: 100%;
+    height: 200px;
+}
+
+.btn-group-vertical {
+    color: #000;
+    background-color: #FFF;
+    border-color: #FFF;  
+    border-radius: 0px !important;
+    text-align: left;
+}
+
+.optin {
+    color: #000;
+    background-color: #FFF;
+    border-color: #FFF;  
+    border-radius: 0px !important;
+    text-align: left;
+}
+
+.btn-check:checked+.btn, :not(.btn-check)+.btn:active, .btn:first-child:active, .btn.active, .btn.show, .btn.in {
+    border: none;
+}
+
+.btn-optin {
+    color: #000;
+    background-color: #FFF;
+    border-color: #FFF;  
+    border-radius: 0px !important;
+    text-align: left;
+}
+
+
+
+.action-button.active {
+    color: #000 !important;
+    text-decoration: none !important;
+    font-weight: bold;
+}
+
+.action-button.shinyjs-disabled[disabled] {
+    color: $font-grey !important;
+    font-weight: normal !important;
+}
+
+.btn.action-button.shinyjs-disabled[disabled] {
+    background: $font-grey !important;
+    opacity: 1 !important;
+    color: $support-white !important;
+    border-color: $font-grey !important;
+}
+
+.btn-file {
+    margin-left: 20px;
+    border-radius: 20px;
+    background: $primary-dark !important;
+    color: $support-white !important;
+    &:hover {
+        background: #781DC9 !important;
+        color: $support-white !important;
+    }
+}
+/* ========================  */ 
+/* ======== Header ========  */ 
+/* ========================  */ 
+#header {
+    padding: 4px 0;
+     img {
+        height: 48px;
+    }
+}
+#menu span {
+    margin: 0 10px;
+}
+/* ========================  */ 
+/* ========= TAB ==========  */ 
+/* ========================  */ 
+
+.tab-up {
+    .nav-tabs {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: 0;
+        transform: translateY(-100%);
+
+    }
+}
+
+/* ==== nav-tabs ==== */
+.nav-hidden a {
+    padding: 0;
+}
+
+.tabbable {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    .nav-tabs {
+        justify-content: center;
+        border-bottom: none;
+        .nav-link {
+            border-radius: 0 !important;
+            &.active {
+                color: #000000;
+                font-weight: 700;
+            }
+            &:not(.active) {
+                text-decoration: underline;
+            }
+        }
+        li  {
+            > a {
+                border-radius: 0 !important;
+                padding: 22px 24px;
+                border: none;
+                font-size: 20px;
+                .active {
+                    color: #000000;
+                    font-weight: 700;
+                }
+                &:not(.active) {
+                    text-decoration: underline;
+                }
+            }
+        }
+        .tabbable {
+            .nav-tabs {
+                a {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+}
+
+/* ==== content ==== */
+
+.tab-menu {
+    border-top: 1px solid $font-grey;
+}
+
+.tab-pane[data-value="data"] {
+    min-height: calc(100vh - 171px);
+    flex-direction: column;
+}
+
+.tab-content {
+    >.tab-pane[data-value="data"] {
+        &.active {
+            display: flex;
+        }
+    }
+    .tab-content {
+        .tab-content {
+            .nav-tabs {
+                a {
+                    font-size: 16px;
+                }
+            }
+            .tab-content {
+                padding-top : 67px;
+            }
+        }
+    }
+}
+
+/* ========================  */ 
+/* ======== TABLE =========  */ 
+/* ========================  */ 
+
+caption {
+    padding-left: 1.0rem;
+}
+
+.btn-myrgbut {
+border-radius: 0;
+}
+
+.btn-group-vertical-myrgbut {
+    color: #000;
+    background-color: $support-grey;
+    
+}
+
+// Odd row shading in DT tables
+table.dataTable.display tbody tr.odd {
+    background-color: $support-grey;
+}
+
+table.dataTable tbody th, table.dataTable tbody td {
+    padding: 2px 2px;
+}
+
+// Selected rows in DT
+table.dataTable.display>tbody>tr.odd.selected>* {
+    box-shadow: inset 0 0 0 9999px #AAA;
+}
+table.dataTable.display>tbody>tr.even.selected>* {
+    box-shadow: inset 0 0 0 9999px #AAA;
+}
+
+table.dataTable.display>tbody>tr.selected+tr.selected>td {
+    border-color: #fff;
+}
+
+
+.table {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    th,td {
+        line-height: 1.15;
+        padding: 10px !important;
+    }
+    thead {
+        th, td {
+            padding: 0 12px 12px 12px !important;
+        }
+    }
+    tbody {
+        tr {
+            td {
+                font-size: 16px;
+            }
+            &:nth-child(odd) {
+                background: $support-grey;
+            }
+        }
+    }
+    tr {
+        th, td {
+            &:not(:last-child) {
+                border-right: solid 1px $border-grey;
+            }
+        }
+    }
+    >:not(caption)>*>* {
+        border-bottom: none;
+        border-top: none;
+        border-left: none;
+    }
+    // Forms specifics
+    .form-group {
+        margin-bottom: 0;
+    }
+    label {
+        &:empty {
+            display: none;
+        }
+    }
+}
+
+div.dataTables_filter label {
+    display: flex;
+    align-items: center;
+}
+
+.dataTables_paginate  {
+    .pagination {
+        li {
+            margin: 0 5px !important;
+            &.active {
+                a {
+                    text-decoration: none;
+                    font-weight: bold;
+                    color: $font-black;
+                }
+            }
+            &.disabled {
+                a {
+                    cursor: default;
+                    text-decoration: none;
+                    color: $font-grey;
+                }
+            }
+        }
+    }
+}
+
+/* ========================  */ 
+/* ========= Card =========  */ 
+/* ========================  */ 
+.card {
+    padding: 40px;
+}
+// Fluid rather than a fixed 735px: the steps put cards side by side in
+// narrow columns, and the result cards need the full width for tables and
+// plots. A fixed width would overflow the column it sits in.
+//
+// `margin: 0 auto`, not `margin: auto`. A Bootstrap .card is a column flex
+// container, so an `auto` block margin absorbs the leftover vertical space
+// and centres the content - which pushed the settings sidebar halfway down
+// the card whenever the results column next to it was tall. Only the
+// horizontal centring is wanted here.
+.card-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+// Opt back into the narrow, centred reading width for text-only cards.
+.card-container.card-narrow {
+    max-width: 735px;
+}
+
+/* ================================  */ 
+/* ========= Shiny Helper =========  */ 
+/* ================================  */ 
+.shinyhelper-wrapper {
+    > * {
+        display: inline;
+    }
+    .shinyhelper-container {
+        position: static !important;
+        .shinyhelper-icon {
+            &:before {
+                content: "";
+                display: block;
+                height: 22px;
+                width: 22px;
+                background: url(./img/help-text-important.svg) center no-repeat;
+                background-size: 22px 22px;
+            }
+        }
+    }
+}
+
+/* ================================  */ 
+/* ========= Sliders =========  */ 
+/* ================================  */ 
+
+.slider {
+    label {
+        display: block !important;
+        margin-bottom: 0 !important; 
+        border-bottom: 1px solid $font-grey;
+    }
+}
+
+.irs--shiny {
+    &.irs-with-grid {
+        margin: 0 30px;
+        height: 53px;
+        .irs-grid {
+            span:nth-child(2),
+            span:last-child {
+                display: none;
+            }
+            span:first-child,
+            span:nth-last-child(2) {
+                height: 16px;
+                top: -8px;
+            }
+            .irs-grid-text {
+                font-size: 14px;
+            }
+        }
+    }
+    .irs-bar {
+        height: 4px;
+        border: none;
+        background: $primary;
+    }
+    .irs-grid {
+        width: 100% !important;
+        left: 0 !important;
+    }
+    .irs-handle {
+        top: 18px !important;
+        width: 16px;
+        height: 16px;
+        border: none;
+        background: $primary;
+        &:hover {
+          background: $primary;  
+        }
+    }
+    .irs-line {
+        top: 26px;
+        height: 1px;
+        border: none;
+        background: $font-black;
+    }
+    .irs-min,
+    .irs-max {
+        background: none;
+        padding: 0;
+        font-size: 16px;
+        font-weight: bold;
+        visibility: visible !important;
+    }
+    .irs-single {
+        top: -24px;
+        left: auto !important;
+        right: -30px;
+        padding: 0;
+        background: none;
+        font-size: 16px;
+        font-weight: bold;
+        color: $primary;
+    }
+    .irs-min {
+        left: -30px;
+        top: 15px;
+    }
+    .irs-max {
+        right: -30px;
+        top: 15px;
+    }
+}
+
+/* ========================  */ 
+/* ========= Form =========  */ 
+/* ========================  */ 
+.form-group p {
+    margin-bottom: 0;
+}
+.form-label, 
+.shiny-input-container .control-label {
+    margin-bottom: 10px;    
+}
+label {
+    font-weight: bold;
+    > span {
+        display: flex;
+        align-items: center;
+    }
+    img {
+        margin-right: 10px;
+    }
+}
+.message {
+    position: absolute;
+    bottom: 50%;
+    transform: translateY(70%);
+    left : calc(100% + 15px);
+    margin: 0 !important;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.success-message {
+    color: $success;
+}
+.error-message {
+    color: $error;
+}
+
+.shiny-input-container:not(.shiny-input-container-inline) {
+    width: 100%;
+    max-width: 100%;
+}
+.shiny-file-input-progress {
+    margin: 8px 0;
+}
+.fileupload {
+    .input-group {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+    .form-control[readonly], input {
+        border: 1px solid $border-grey;
+        background: $support-grey;
+        border-radius: 0 !important;
+    }
+}
+
+// ==== Dropdown
+.bootstrap-select {
+    .dropdown-toggle {
+        border-radius: 0;
+        background: #fff;
+        &:focus,
+        >select.mobile-device .bootstrap-select:focus+.dropdown-toggle {
+            outline: none !important;
+            box-shadow: 0 0 0 0.25rem rgba(122, 0, 230, 0.25) !important;
+        }
+        &:hover {
+            background: #fff;
+        }
+        .filter-option-inner-inner {
+            text-overflow: ellipsis;
+            text-transform: none;
+        }
+        &::after {
+            width: 10px;
+            height: 10px;
+            border: none;
+            border-right: 2px solid #000;
+            border-bottom: 2px solid #000;
+            transform: rotate(45deg);
+        }
+    }
+    select[multiple="multiple"] {
+        + button {
+            + .dropdown-menu {
+                a {
+                    padding-left: 38px;
+                }
+            } 
+        }
+    }
+    .dropdown-menu  {
+        padding: 5px;
+        padding-top: 5px !important;
+        .bs-actionsbox {
+            .actions-btn {
+                text-transform: none;
+                background: #fff;
+                color:$primary;
+                text-decoration: underline;
+                font-size: 20px;
+                text-underline-offset: 4px;
+                border: none;
+                &:focus {
+                    outline: none !important;
+                }
+            }
+            + .inner.open {
+                padding-top: 30px;
+                .glyphicon {
+                    position: absolute !important;
+                    display: block !important;
+                    top: 7px !important;
+                    right: auto !important;
+                    left: 11px;
+                    &:before {
+                        content: "";
+                        display: block !important;
+                        position: absolute !important;
+                        width: 16px;
+                        height: 16px;
+                        border: 1px solid $font-grey;
+                        background: #fff;
+                    }
+                }
+            }
+        }
+        li {
+            &.selected {
+                background: $primary-light;
+                a {
+                    .glyphicon  {
+                        &:after {
+                            content: "";
+                            display: block;
+                            position: absolute;
+                            top: 2px;
+                            left: 2px;
+                            width: 12px;
+                            height: 12px;
+                            background: $primary;
+                        }
+                    }
+                    &:hover {
+                        color: $font-black;
+                    }
+                }
+            }
+            a {
+                font-weight: bold;
+                &:hover {
+                    background: $support-grey;
+                }
+            }
+        }
+    }
+}
+
+// Input type number
+input[type="number"] {
+    background: url('./img/number.svg') no-repeat center right 10px #fff;
+    background-size: auto 21px;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  opacity: 0 !important;
+}
+
+@-moz-document url-prefix() {
+    input[type=number] {
+        -moz-appearance:textfield;
+    }
+    input[type="number"] {
+        background: #fff;
+    }
+}
+
+.selectize-input,
+.form-control {
+    display: block;
+    border: 1px solid $font-grey;
+    background: $support-white;
+    border-radius: 0 !important;
+    height: 44px;
+}
+
+.selectize-input .item {
+    display: block;
+    line-height: 30px;
+}
+
+.selectize-control.single .selectize-input.active:after,
+.selectize-control.single .selectize-input:after {
+    margin-top: 0 !important;
+    border-bottom: 2px solid $font-black !important;
+    border-left: 2px solid $font-black !important;
+    border-right: none !important;
+    border-top: none !important;
+    transform: rotate(-45deg);
+    width: 10px;
+    height: 10px;
+    top: calc(50% - 5px);
+}
+
+// ==== Radio
+.shiny-input-container .radio-inline {
+    position: relative;
+    margin-right: 30px;
+    padding-left: 21px;
+}
+
+.radio-inline {
+    input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+    }
+    span:before,
+    span:after {
+        content: "";
+        position: absolute;
+        display: block;
+    }
+    span:before {
+        top: 3px;
+        left: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 20px;
+        border: 1px solid $font-grey;
+    }
+    span:after {
+        top: 5px;
+        left: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 20px;
+        background: $support-white;
+    }
+    input:checked {
+        + span:after {
+            background: $primary;
+        }
+    }
+}
+
+
+// ==== Checkboxes
+.shiny-options-group {
+    display: flex;
+}
+
+.checkbox {
+    label {
+        display: flex;
+        padding-right: 5px;
+        > span {
+            padding-left: 5px;
+            display: block;
+        }
+    }
+}
+
+
+/* =================================================================== */
+/* =====================  CheckMate 2.0 — UI polish  ================== */
+/* A light, homogeneous modernisation. Same palette, softer surfaces,  */
+/* consistent radii and smoother interactions. No structural changes.  */
+/* =================================================================== */
+
+// ---- Shared tokens -------------------------------------------------
+$cm-radius:        14px;   // cards / large surfaces
+$cm-radius-input:  8px;    // inputs / small controls
+$cm-radius-btn:    12px;   // rounded-rectangle buttons
+$cm-shadow-soft:   0 10px 30px rgba(35, 0, 76, 0.07), 0 2px 8px rgba(0, 0, 0, 0.04);
+$cm-shadow-hover:  0 16px 40px rgba(35, 0, 76, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
+$cm-ease:          0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+// ---- Header --------------------------------------------------------
+#header {
+    position: relative;
+    background: $support-white;
+    box-shadow: 0 1px 0 $border-grey, 0 4px 16px rgba(35, 0, 76, 0.04);
+    z-index: 20;
+
+    // Same opaque-white-square logo as the home screen (see .home-logo),
+    // so the corners are rounded here too - just at a radius that suits
+    // 46px rather than 320px.
+    .logo-badge {
+        height: 46px;
+        width: auto;
+        background: $support-white;
+        border-radius: 10px;
+        transition: transform $cm-ease, filter $cm-ease;
+        &:hover { transform: scale(1.05); }
+    }
+}
+
+// ---- Home hero logo ------------------------------------------------
+// The eVCGsampler logo is an opaque PNG with a plain white square around the
+// hexagon (no alpha channel to work with). Rather than fight it, the white is
+// turned into a deliberate rounded tile: the same white as the image's own
+// background, corners clipped by border-radius, and a soft purple shadow so
+// it reads as a card on the light page instead of a stray white rectangle.
+// A drop-shadow() filter would trace the square alpha, so box-shadow is used.
+.home-logo-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.home-logo {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    background: $support-white;
+    border: 1px solid $border-grey;
+    border-radius: 28px;
+    box-shadow: 0 12px 28px rgba(122, 0, 230, 0.18);
+    transition: transform $cm-ease, box-shadow $cm-ease;
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 36px rgba(122, 0, 230, 0.24);
+    }
+}
+
+// ---- Cards ---------------------------------------------------------
+.card {
+    border: 1px solid $border-grey;
+    border-radius: $cm-radius;
+    background: $support-white;
+    box-shadow: $cm-shadow-soft;
+    transition: box-shadow $cm-ease, transform $cm-ease;
+    &:hover { box-shadow: $cm-shadow-hover; }
+}
+
+// ---- Buttons -------------------------------------------------------
+// Rounded rectangles: soft corners, not full pills. The flat list-style
+// option buttons (.btn-group-vertical / .optin / .btn-optin) keep their
+// own `border-radius: 0 !important` and are intentionally left squared.
+.btn {
+    border-radius: $cm-radius-btn;
+    transition: background-color $cm-ease, box-shadow $cm-ease,
+                transform $cm-ease, filter $cm-ease;
+    letter-spacing: 0.02em;
+}
+.btn-primary {
+    box-shadow: 0 6px 16px rgba(122, 0, 230, 0.22);
+    &:hover:not([disabled]) {
+        filter: brightness(1.04);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(122, 0, 230, 0.30);
+    }
+    &:active:not([disabled]) { transform: translateY(0); }
+}
+.btn-file {
+    border-radius: $cm-radius-btn;
+    transition: background-color $cm-ease, transform $cm-ease;
+    &:hover { transform: translateY(-1px); }
+}
+
+// ---- Breadcrumb menu links ----------------------------------------
+#menu {
+    .action-button {
+        // Completed steps (enabled, already visited): muted grey.
+        color: #6f6d7b !important;
+        text-decoration: none !important;
+        transition: color $cm-ease, opacity $cm-ease;
+
+        // The visible label lives in an inner span; keep its underline
+        // tight to the text (never the surrounding whitespace / arrow).
+        .action-label { text-decoration: none; color: inherit !important; }
+
+        // Current stage: purple, with the label text underlined.
+        &.active {
+            color: $primary !important;
+            font-weight: 700;
+            text-decoration: none !important;
+            .action-label {
+                text-decoration: underline;
+                text-underline-offset: 4px;
+            }
+        }
+        // Upcoming steps (not yet reachable): purple, no underline.
+        &[disabled],
+        &.shinyjs-disabled[disabled] {
+            color: $primary !important;
+            text-decoration: none !important;
+        }
+        // Completed steps preview purple on hover.
+        &:not(.active):not([disabled]):hover {
+            color: $primary !important;
+            opacity: 1;
+            text-decoration: none !important;
+        }
+    }
+    // Separators (" > ") only - NOT the label spans inside the links.
+    span:not(.action-label) {
+        color: #9a98a6;
+        text-decoration: none;
+    }
+}
+
+// ---- Inputs (rounded to match the pill buttons) --------------------
+.selectize-input,
+.form-control {
+    border-radius: $cm-radius-input !important;
+    transition: border-color $cm-ease, box-shadow $cm-ease;
+    &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 0.2rem rgba(122, 0, 230, 0.15);
+    }
+}
+input[type="number"] {
+    border-radius: $cm-radius-input !important;
+}
+.fileupload {
+    .form-control[readonly], input {
+        border-radius: $cm-radius-input 0 0 $cm-radius-input !important;
+    }
+}
+
+// ---- Well panel (Exploration sidebar) ------------------------------
+.well {
+    border-radius: $cm-radius;
+    border: 1px solid $border-grey;
+    box-shadow: $cm-shadow-soft;
+}
+
+// ---- DataTables surface --------------------------------------------
+.container-output,
+.dataTables_wrapper {
+    border-radius: $cm-radius-input;
+}
+
+// ---- Help launcher (bottom-right bubble) ---------------------------
+#help {
+    box-shadow: 0 8px 22px rgba(35, 0, 76, 0.28);
+    transition: transform $cm-ease, box-shadow $cm-ease;
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(35, 0, 76, 0.36);
+    }
+}
+
+// ---- Global scrollbar refinement -----------------------------------
+::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+}
+
+/* =================================================================== */
+/* ===== VCG sampler specifics ======================================= */
+/* =================================================================== */
+
+// ---- Status pills ---------------------------------------------------
+// Traffic-light coding shared by the data-check table, the sample-size
+// overview and the pre-test verdicts, so a colour always means the same
+// thing: cyan = fine, orange = worth a look, red = blocking.
+.vcg-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    &.pill-ok      { color: #00A091; background: rgba(0, 160, 145, 0.12); }
+    &.pill-warn    { color: #FE7500; background: rgba(254, 117, 0, 0.15); }
+    &.pill-bad     { color: #FF6D6A; background: rgba(255, 109, 106, 0.15); }
+    &.pill-neutral { color: #5F7786; background: rgba(95, 119, 134, 0.14); }
+}
+
+// ---- Metric tiles (sample sizes, energy distance, p-values) ---------
+.vcg-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.vcg-tile {
+    flex: 1 1 140px;
+    padding: 14px 18px;
+    border: 1px solid $border-grey;
+    border-radius: $cm-radius-input;
+    background: $support-white;
+    .vcg-tile-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6f6d7b;
+        margin-bottom: 4px;
+    }
+    .vcg-tile-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+        color: $primary-dark;
+    }
+    .vcg-tile-sub {
+        font-size: 0.8rem;
+        color: #6f6d7b;
+        margin-top: 4px;
+    }
+    &.tile-accent .vcg-tile-value { color: $primary; }
+}
+
+// ---- The formula preview -------------------------------------------
+.vcg-formula {
+    font-family: "Courier New", monospace;
+    font-size: 1.05rem;
+    padding: 12px 16px;
+    border-radius: $cm-radius-input;
+    background: $primary-light;
+    border: 1px solid rgba(122, 0, 230, 0.18);
+    color: $primary-dark;
+    word-break: break-word;
+}
+
+// ---- Step sidebar (settings on the left, results on the right) ------
+.vcg-side {
+    .form-group { margin-bottom: 14px; }
+    .btn { width: 100%; }
+}
+
+// ---- uiOutput wrappers in the settings sidebars ---------------------
+// The variable pickers are built server-side with renderUI, so each one
+// lands in a div.shiny-html-output. The inherited rule gives that div
+// `overflow-x: auto` so wide HTML output can scroll - but per spec, one axis
+// set to auto computes the other one to auto as well, which turns the
+// wrapper into a clipping box. A selectize dropdown opened inside it is then
+// cut off at the wrapper's edge and gets its own tiny scrollbar. The
+// sidebars only hold inputs, so nothing there needs to scroll or be padded.
+.vcg-side .shiny-html-output {
+    overflow: visible;
+    padding: 0;
+}
+
+// The option list itself: selectize defaults to a 200px window, which starts
+// scrolling at about six entries. Studies routinely have more candidate
+// covariates than that, so the list is given room to show them all. Very
+// long lists still scroll - there is no way around that.
+.selectize-dropdown-content {
+    max-height: 420px;
+}
+
+// ---- Multi-selects (covariates, strata, outcome variables) ----------
+// The inherited rule pins every .selectize-input to a 44px height, which
+// works for a single value but clips the stacked items of a multi-select.
+// Selected values become chips that wrap instead.
+.selectize-control.multi .selectize-input {
+    height: auto !important;
+    min-height: 44px;
+    padding: 5px 8px;
+    &.has-items { padding: 5px 8px; }
+    .item {
+        display: inline-flex;
+        align-items: center;
+        line-height: 1.4;
+        margin: 2px 4px 2px 0;
+        padding: 2px 4px 2px 10px;
+        border-radius: 999px;
+        background: $primary-light;
+        border: 1px solid rgba(122, 0, 230, 0.22);
+        color: $primary-dark;
+        font-weight: 600;
+        font-size: 0.9rem;
+
+        // The "x" added by the remove_button plugin. Selectize ships its own
+        // rules for this, but they assume the default square chip - these
+        // keep it inside the rounded pill.
+        .remove {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            margin-left: 6px;
+            border: none;
+            border-radius: 999px;
+            padding: 0;
+            color: $primary;
+            font-weight: 700;
+            line-height: 1;
+            text-decoration: none;
+            &:hover {
+                background: $primary;
+                color: $support-white;
+            }
+        }
+    }
+}
+
+// ---- Notes ----------------------------------------------------------
+// A block-level note. Deliberately NOT the inherited `.message` class,
+// which is absolutely positioned next to an input for one-line inline
+// validation and would push a paragraph off the side of the card.
+.vcg-note {
+    padding: 10px 14px;
+    border-left: 4px solid #FE7500;
+    border-radius: 0 $cm-radius-input $cm-radius-input 0;
+    background: #FFF7F0;
+    margin: 14px 0;
+    font-size: 0.95rem;
+    &.note-info {
+        border-left-color: $primary;
+        background: $primary-light;
+    }
+    &.note-bad {
+        border-left-color: #FF6D6A;
+        background: #FFF3F3;
+    }
+}
+
+// ---- Section headings inside the result cards -----------------------
+.vcg-section-title {
+    font-weight: 700;
+    color: $primary-dark;
+    margin: 0 0 4px;
+}
+.vcg-section-hint {
+    color: #6f6d7b;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+// ---- Cards on the step pages scroll rather than stretch the page ----
+.vcg-scroll {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    padding-right: 6px;
+}

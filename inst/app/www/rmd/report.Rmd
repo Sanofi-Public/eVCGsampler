@@ -1,0 +1,461 @@
+---
+title: "VCG sampling report"
+author:
+date: "`r Sys.Date()`"
+output:
+    html_document:
+        toc: true
+        toc_float: true
+        toc_collapsed: false
+        toc_depth: 2
+        css: report.css
+params:
+  meta: NA
+  import: NA
+  setup: NA
+  energy: NA
+  outlier: NA
+  sampling: NA
+  opts: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.width = 8, dpi = 110)
+
+library(ggplot2)
+# plot_var() returns a patchwork object as soon as strata are involved, so
+# the package has to be attached for those plots to print.
+if (requireNamespace("patchwork", quietly = TRUE)) library(patchwork)
+
+meta     <- params$meta
+imp      <- params$import
+setu     <- params$setup
+energy   <- params$energy
+outlier  <- params$outlier
+samp     <- params$sampling
+opts     <- params$opts
+
+# ---- small local helpers (kept here so the template is self-contained) ----
+`%|%` <- function(a, b) if (is.null(a) || length(a) == 0 || all(is.na(a)) ||
+                            (is.character(a) && !any(nzchar(a)))) b else a
+
+kt <- function(x, ...) {
+    if (is.null(x) || nrow(x) == 0) return(invisible(NULL))
+    knitr::kable(x, format = "html", escape = FALSE, row.names = FALSE, ...)
+}
+
+pill_html <- function(text, level = "neutral") {
+    sprintf('<span class="vcg-pill pill-%s">%s</span>', level, text)
+}
+
+tile_html <- function(label, value, sub = "") {
+    sprintf(paste0('<div class="vcg-tile"><div class="vcg-tile-label">%s</div>',
+                   '<div class="vcg-tile-value">%s</div>',
+                   '<div class="vcg-tile-sub">%s</div></div>'),
+            label, value, sub)
+}
+
+tiles_html <- function(...) {
+    cat('<div class="vcg-tiles">', paste0(c(...), collapse = ""), '</div>', sep = "\n")
+}
+
+status_pill <- function(status) {
+    lvl <- switch(status,
+                  "ok" = "ok",
+                  "size >= 75% of POOL" = "warn",
+                  "very small POOL" = "warn",
+                  "bad")
+    pill_html(status, lvl)
+}
+
+verdict <- function(p, phase, alpha = 0.05) {
+    if (is.null(p) || is.na(p)) return(pill_html("not available", "neutral"))
+    if (phase == "before") {
+        if (p < alpha) pill_html("POOL and TG differ - balancing is worthwhile", "warn")
+        else           pill_html("no detectable imbalance to start with", "ok")
+    } else {
+        if (p < alpha) pill_html("VCG still differs from TG - balancing did not succeed", "bad")
+        else           pill_html("VCG matches TG - balancing successful", "ok")
+    }
+}
+```
+
+```{r header, results='asis'}
+logo <- meta$logo
+img_tag <- ""
+if (!is.null(logo) && file.exists(logo)) {
+    img_tag <- sprintf('<img src="%s" alt="VCG sampler">', knitr::image_uri(logo))
+}
+cat(sprintf(
+    '<div class="vcg-report-header">%s<p class="vcg-report-date">eVCGsampler app v%s<br>eVCGsampler v%s</p></div>',
+    img_tag, meta$app_version, meta$pkg_version
+))
+
+# Study and author on their own lines - two consecutive inline expressions
+# in markdown would be folded into a single paragraph.
+if (nzchar(meta$study  %|% "")) cat("**Study:** ",       meta$study,  "  \n", sep = "")
+if (nzchar(meta$author %|% "")) cat("**Prepared by:** ", meta$author, "  \n", sep = "")
+```
+
+This report documents a Virtual Control Group (VCG) drawn with energy-distance based
+covariate balancing. The sampler selects **whole, unweighted animals** from the
+historical control pool, so no special downstream analysis is required.
+
+Balancing is a final refinement step. It reduces biological heterogeneity, but it
+does not replace careful pre-filtering of the historical control data and it does
+not address technical heterogeneity from differing collection methods, processing
+pipelines or experimental conditions.
+
+```{r comment, results='asis'}
+if (nzchar(meta$comment %|% "")) {
+    cat('<div class="vcg-note">', htmltools::htmlEscape(meta$comment), '</div>', sep = "\n")
+}
+```
+
+# 1. Data import
+
+```{r import-tiles, results='asis'}
+tiles_html(
+    tile_html("POOL file", format(meta$n_pool_file %|% "-", big.mark = " "),
+              meta$pool_name %|% "-"),
+    tile_html("TG file",
+              if (isTRUE(meta$combined)) format(meta$n_tg_file %|% "-", big.mark = " ") else "-",
+              if (isTRUE(meta$combined)) (meta$tg_name %|% "-") else "included in the POOL file"),
+    tile_html("Rows for balancing", format(imp$n_rows, big.mark = " "), "after combining"),
+    tile_html("Variables", imp$n_vars, "columns available")
+)
+```
+
+```{r import-mode, results='asis'}
+if (isTRUE(meta$combined)) {
+    cat("The POOL and the TG animals were uploaded separately and stacked with",
+        "`combine_data()`, which keeps only the variables present in **both** files",
+        "and adds the group indicator `", setu$group, "`.\n", sep = " ")
+} else {
+    cat("A single file was uploaded; the group variable `", setu$group,
+        "` was already part of it.\n", sep = "")
+}
+```
+
+```{r combine-check, results='asis'}
+if (!is.null(imp$check)) {
+    cat("\n## Variable matching between the two files\n\n")
+    n_drop <- sum(imp$check$Status == "dropped")
+    n_bad  <- sum(imp$check$Status == "type mismatch")
+    n_keep <- sum(imp$check$Status == "combined")
+    cat(paste(pill_html(paste0(n_keep, " combined"), if (n_keep > 0) "ok" else "bad"),
+              if (n_drop > 0) pill_html(paste0(n_drop, " dropped"), "warn") else "",
+              if (n_bad  > 0) pill_html(paste0(n_bad, " type mismatch"), "bad") else ""),
+        "\n\n")
+    print(kt(imp$check))
+}
+```
+
+## Variable overview
+
+```{r var-overview}
+kt(imp$variables)
+```
+
+# 2. Setup
+
+```{r setup-formula, results='asis'}
+cat('<div class="vcg-formula">', setu$formula, '</div>', sep = "")
+```
+
+* **Animal ID:** `r if (is.null(setu$id)) "none selected" else setu$id`
+* **Group variable:** `r setu$group`
+* **Covariates balanced:** `r paste(setu$covariates, collapse = ", ")`
+* **Stratum variables:** `r if (length(setu$stratum)) paste(setu$stratum, collapse = ", ") else "none"`
+* **VCG size:** `r paste(setu$sizes, collapse = ", ")`
+* **Covariate weights:** `r if (is.null(setu$weights)) "none (all covariates weighted equally)" else paste(paste0(setu$covariates, " x", setu$weights), collapse = ", ")`
+* **Complete cases used:** `r format(setu$n_complete, big.mark = " ")` of `r format(imp$n_rows, big.mark = " ")` rows
+
+## Sample sizes
+
+```{r size-overview, results='asis'}
+ov <- setu$overview
+if (!is.null(ov)) {
+    show <- ov
+    show$Share_of_POOL <- ifelse(is.na(show$Share_of_POOL), "-", paste0(show$Share_of_POOL, "%"))
+    show$VCG_size <- ifelse(is.na(show$VCG_size), "-", as.character(show$VCG_size))
+    show$Status <- vapply(ov$Status, status_pill, character(1))
+    names(show) <- c("Stratum", "N POOL", "N TG", "VCG size", "Share of POOL", "Status")
+    print(kt(show))
+}
+if (length(setu$messages)) {
+    for (m in setu$messages) cat('<div class="vcg-note">', m, '</div>\n', sep = "")
+}
+```
+
+# 3. Pre-tests
+
+## Energy test - POOL vs TG
+
+```{r energy, results='asis'}
+if (is.null(energy)) {
+    cat("_The energy test was not run._\n")
+} else {
+    tiles_html(
+        tile_html("Energy distance", signif(energy$distance, 4), "0 = identical distributions"),
+        tile_html("p-value", if (is.na(energy$p_value)) "-" else signif(energy$p_value, 3),
+                  if (isTRUE(energy$stratified)) "smallest across strata" else "one-sided permutation test"),
+        tile_html("Permutations", energy$R, "per test"),
+        tile_html("Alpha", energy$alpha, "significance level")
+    )
+    cat("\n", verdict(energy$p_value, "before", energy$alpha), "\n\n")
+    cat("A small p-value means the POOL and the TG differ more than random variation",
+        "would explain - which is the situation VCG sampling is designed for.\n\n")
+    print(kt(energy$table))
+    if (isTRUE(energy$stratified)) {
+        cat("\n**Energy distance per stratum**\n\n")
+        print(kt(energy$per_stratum))
+    }
+}
+```
+
+```{r energy-plot, fig.height=4.6}
+if (!is.null(energy) && isFALSE(energy$stratified) && !is.null(energy$plot)) {
+    energy$plot
+}
+```
+
+```{r energy-plot-note, results='asis'}
+if (!is.null(energy) && isFALSE(energy$stratified)) {
+    cat("_Purple: energy distances from randomly reshuffled group labels.",
+        "Orange: the critical value. Cyan: the observed distance._\n")
+}
+```
+
+## Outlier studies
+
+```{r outlier, results='asis'}
+if (is.null(outlier)) {
+    cat("_The outlier study test was not run._\n")
+} else {
+    n_out <- sum(outlier$summary$is_outlier)
+    cat(pill_html(paste0(n_out, if (n_out == 1) " outlier study" else " outlier studies"),
+                  if (n_out == 0) "ok" else "warn"), "\n\n")
+    cat(nrow(outlier$summary), " studies of `", outlier$study, "` were compared on ",
+        paste(outlier$vars, collapse = ", "), " (", format(outlier$n_used, big.mark = " "),
+        " animals", if (isTRUE(outlier$pool_only)) ", POOL only" else "", "). ",
+        "Studies beyond the ", round(100 * outlier$cutoff),
+        "th percentile of the permuted distances are flagged.\n\n", sep = "")
+    s <- outlier$summary
+    show <- data.frame(
+        Study = s$group,
+        `Median energy distance` = signif(s$median_distance, 4),
+        Verdict = vapply(s$is_outlier, function(o)
+            pill_html(if (isTRUE(o)) "outlier" else "consistent",
+                      if (isTRUE(o)) "bad" else "ok"), character(1)),
+        check.names = FALSE, stringsAsFactors = FALSE
+    )
+    print(kt(show))
+    if (n_out > 0) {
+        cat('<div class="vcg-note">Consider whether the flagged studies belong in the',
+            'historical control pool at all. This test looks at outcome and technical',
+            'variables, not at the balanced covariates.</div>\n')
+    }
+}
+```
+
+```{r outlier-plots, fig.height=4}
+if (!is.null(outlier) && !is.null(outlier$barplot)) outlier$barplot
+```
+
+```{r outlier-heatmap, fig.height=5.4}
+if (!is.null(outlier) && !is.null(outlier$heatmap)) outlier$heatmap
+```
+
+# 4. VCG sampling
+
+```{r sampling-tiles, results='asis'}
+multi <- isTRUE(samp$multi)
+if (multi) {
+    vcols  <- grep("^VCG_[0-9]+$", names(samp$data), value = TRUE)
+    n_each <- sum(samp$data[[vcols[1]]] == 1, na.rm = TRUE)
+    n_ok   <- sum(!is.na(samp$post_ps) & samp$post_ps >= 0.05)
+    tiles_html(
+        tile_html("VCGs drawn", samp$n_vcg, paste(n_each, "animals each")),
+        tile_html("Balanced VCGs", paste0(n_ok, " / ", samp$n_vcg), "post-hoc p &ge; 0.05"),
+        tile_html("Smallest p-value",
+                  if (is.na(samp$post_p)) "-" else signif(samp$post_p, 3), "across all VCGs"),
+        tile_html("Overlap", if (is.na(samp$overlap_pct)) "-" else paste0(samp$overlap_pct, "%"),
+                  paste0("seed ", samp$seed)),
+        tile_html("Permutations", samp$R, "post-hoc test per VCG")
+    )
+    cat("\n", samp$n_vcg, " random VCGs were drawn with `multiSampler()`. They are meant",
+        " to be used as a set, e.g. for a proof-of-concept study, not for picking the",
+        " best-looking VCG afterwards.\n\n", sep = "")
+} else {
+n_vcg <- sum(!is.na(samp$data$VCG) & samp$data$VCG == 1)
+tiles_html(
+    tile_html("VCG selected", n_vcg, "animals"),
+    tile_html("Post-hoc p-value",
+              if (is.na(samp$post_p)) "-" else signif(samp$post_p, 3),
+              if (isTRUE(samp$stratified)) "smallest across strata" else "TG vs VCG"),
+    tile_html("Mode", if (isTRUE(samp$random)) "random subset" else "best subset",
+              paste0("seed ", samp$seed)),
+    tile_html("Permutations", samp$R, "post-hoc test")
+)
+cat("\n", verdict(samp$post_p, "after"), "\n\n")
+cat("A **large** p-value is the goal here: it means the selected VCG is no longer",
+    "distinguishable from the TG on the balanced covariates.\n\n")
+}
+if (length(samp$notes)) {
+    for (m in unique(samp$notes)) cat('<div class="vcg-note">', m, '</div>\n', sep = "")
+}
+```
+
+```{r balance-plot-height, include=FALSE}
+# The overlap plot draws one bar per POOL animal.
+overlap_h <- 6
+if (multi) {
+    pool <- samp$data[!is.na(samp$data[[vcols[1]]]), , drop = FALSE]
+    n_pool <- if ("in_stratum" %in% names(pool)) max(table(pool$in_stratum)) else nrow(pool)
+    overlap_h <- max(5, min(20, n_pool / 12))
+}
+```
+
+```{r balance-plot, results='asis', fig.height=overlap_h}
+if (multi) {
+    cat("\n## VCG overlap\n\n")
+    cat("_How often each POOL animal was drawn across the VCGs. The overlap is the",
+        "mean share of VCGs an animal is in, among the animals drawn at least once._\n\n")
+    for (k in seq_along(samp$overlap)) {
+        if (!is.null(names(samp$overlap))) cat("\n### Stratum", names(samp$overlap)[k], "\n\n")
+        print(samp$overlap[[k]])
+        cat("\n\n")
+    }
+} else {
+    cat("\n## Balance target plot\n\n")
+    print(samp$plot)
+    cat("\n\n_Each arrow starts at the POOL-vs-TG difference and points at the VCG-vs-TG",
+        "difference, in median (x) and MAD (y). The purple ellipse is the 95% range of",
+        "differences under random permutation, so an arrow tip inside it means the",
+        "remaining difference is ordinary noise._\n\n")
+}
+```
+
+## Median (MAD) per group
+
+```{r median-mad}
+kt(samp$summary)
+```
+
+`POOL` is the whole historical control pool, `VCG` the subset that was selected
+(`VCG_1`, `VCG_2`, ... when several VCGs were drawn). The VCG rows should sit
+closer to `TG` than `POOL` does.
+
+## Post-hoc energy test - TG vs VCG
+
+```{r post-table, results='asis'}
+if (is.null(samp$post_table)) {
+    cat("_The post-hoc test could not be computed._\n")
+} else {
+    print(kt(samp$post_table))
+}
+```
+
+```{r post-plot, fig.height=4.6}
+if (isFALSE(samp$stratified) && !is.null(samp$post)) samp$post[[2]]
+```
+
+```{r cov-plot-height, include=FALSE}
+# plot_var() stacks the strata itself, so the figure has to grow with the
+# number of strata. The value is used as the fig.height of the next chunk.
+n_strata_plot <- if ("in_stratum" %in% names(samp$data))
+    nlevels(as.factor(samp$data$in_stratum)) else 1
+cov_fig_h <- if (n_strata_plot <= 3) {
+    4.4 * max(1, n_strata_plot)
+} else {
+    4.4 * ceiling(n_strata_plot / 2)
+}
+```
+
+```{r cov-plots, results='asis'}
+if (isTRUE(opts$covplots)) {
+    cat("\n## Covariate distributions\n\n")
+    cat("TG, VCG and POOL side by side for every balanced covariate.",
+        "The VCG should track the TG, not the POOL.\n\n")
+    if (multi) cat("_Shown for `VCG_1` of the", samp$n_vcg, "VCGs._\n\n")
+}
+```
+
+```{r cov-plots-draw, results='asis', fig.height=cov_fig_h}
+if (isTRUE(opts$covplots)) {
+    for (v in samp$covariates) {
+        cat("\n###", v, "\n\n")
+        p <- try(eVCGsampler::plot_var(samp$cov_data %||% samp$data, what = v, group = "VCG"),
+                 silent = TRUE)
+        if (inherits(p, "try-error")) {
+            cat("_This covariate could not be plotted._\n\n")
+        } else {
+            print(p)
+            cat("\n\n")
+        }
+    }
+}
+```
+
+```{r selected-data, results='asis'}
+if (isTRUE(opts$data)) {
+    cat("\n# Selected animals\n\n")
+    # Pre-filtered to VCG == 1 by the app, so this table, the on-screen table
+    # and the two exports always describe the same animals.
+    sel <- samp$selected
+    # ID first - it is what makes this table actionable.
+    keep <- intersect(c(samp$id, samp$stratum, samp$covariates, "e_weights",
+                        "Times_selected", grep("^VCG_[0-9]+$", names(sel), value = TRUE)),
+                      names(sel))
+    sel <- sel[, keep, drop = FALSE]
+    num <- vapply(sel, is.numeric, logical(1))
+    sel[num] <- lapply(sel[num], function(x) signif(x, 4))
+    if (multi) {
+        cat("The ", nrow(sel), " animals drawn into at least one of the ", samp$n_vcg,
+            " VCGs. `VCG_1` ... `VCG_", samp$n_vcg, "` mark membership in each VCG and ",
+            "`Times_selected` counts the VCGs an animal is in.", sep = "")
+    } else {
+        cat("The ", nrow(sel), " animals that make up the VCG, with the energy weight each ",
+            "one received.", sep = "")
+    }
+    if (!is.null(samp$id)) {
+        cat(" Use `", samp$id, "` to pull them from your source data.\n\n", sep = "")
+    } else {
+        cat(" No ID variable was selected, so the individual animals cannot be",
+            "identified from this table.\n\n")
+    }
+    print(kt(sel))
+}
+```
+
+# Method
+
+The sampler minimises the **energy distance** between the selected control animals
+and the treated group over the balanced covariates. Covariates are standardised
+robustly before the distance is computed, so variables on different scales
+contribute comparably; importance weights multiply the standardised covariates and
+therefore change how strongly each one is pulled towards the TG.
+
+The permutation test repeatedly reshuffles the group labels to build the
+distribution of energy distances expected under no group difference, and compares
+the observed distance against it. The test is one-sided.
+
+## References
+
+Schulz, A. *eVCGsampler: VCG Sampling using Energy-Based Covariate Balancing*.
+R package version `r meta$pkg_version`, CRAN.
+<https://cran.r-project.org/web/packages/eVCGsampler/index.html>
+
+Székely, G. J., & Rizzo, M. L. (2016). Energy distance.
+*Wiley Interdisciplinary Reviews: Computational Statistics*, 8(1), 27-38.
+
+# Reproducibility
+
+* eVCGsampler app version: `r meta$app_version`
+* eVCGsampler version: `r meta$pkg_version`
+* Random seed: `r samp$seed`
+* Sampling mode: `r if (isTRUE(samp$multi)) paste0(samp$n_vcg, " random VCGs (multiSampler, Nsamples = ", samp$n_vcg, ")") else if (isTRUE(samp$random)) "random subset (random = TRUE)" else "best subset (random = FALSE)"`
+* R version: `r paste(R.version$major, R.version$minor, sep = ".")`
+* Report generated: `r format(Sys.time(), "%Y-%m-%d %H:%M")`

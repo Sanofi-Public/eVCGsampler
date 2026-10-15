@@ -1,0 +1,165 @@
+/* =====================================================  */
+/* ===== eVCGsampler HTML report stylesheet =======    */
+/* No external font or image references, so the rendered   */
+/* report stays readable wherever it is opened.            */
+/* =====================================================  */
+
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #000000;
+}
+
+h1, h2, h3, h4 {
+    color: #23004C;
+    font-weight: 700;
+}
+
+h1 { margin-top: 1.2em; }
+h2 { margin-top: 1.6em; }
+
+b, strong {
+    color: #7A00E6;
+}
+
+a {
+    color: #7A00E6;
+}
+
+pre:not([class]) {
+    background-color: #F4F2F6;
+}
+
+code {
+    color: #23004C;
+    background-color: #F4F2F6;
+}
+
+/* ===== Floating table of contents ===== */
+
+.list-group-item.active,
+.list-group-item.active:focus,
+.list-group-item.active:hover {
+    z-index: 2;
+    color: #fff;
+    background-color: #7A00E6;
+    border-color: #7A00E6;
+}
+
+.tocify .tocify-item a,
+.tocify .list-group-item {
+    padding: 5px;
+    background: #F4F2F6;
+    color: #7A00E6;
+}
+
+/* ===== Report header ===== */
+
+.vcg-report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #7A00E6;
+    margin-bottom: 24px;
+}
+.vcg-report-header img {
+    height: 64px;
+    width: auto;
+}
+.vcg-report-header .vcg-report-date {
+    color: #5F7786;
+    font-size: 0.9rem;
+    margin: 0;
+    text-align: right;
+}
+
+/* ===== Metric tiles ===== */
+
+.vcg-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 18px 0;
+}
+.vcg-tile {
+    flex: 1 1 150px;
+    padding: 12px 16px;
+    border: 1px solid #E4E4E4;
+    border-radius: 8px;
+    background: #FFFFFF;
+}
+.vcg-tile-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6f6d7b;
+    margin-bottom: 4px;
+}
+.vcg-tile-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #23004C;
+}
+.vcg-tile-sub {
+    font-size: 0.75rem;
+    color: #6f6d7b;
+    margin-top: 4px;
+}
+
+/* ===== Status pills ===== */
+
+.vcg-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+.vcg-pill.pill-ok      { color: #00A091; background: rgba(0, 160, 145, 0.12); }
+.vcg-pill.pill-warn    { color: #FE7500; background: rgba(254, 117, 0, 0.15); }
+.vcg-pill.pill-bad     { color: #FF6D6A; background: rgba(255, 109, 106, 0.15); }
+.vcg-pill.pill-neutral { color: #5F7786; background: rgba(95, 119, 134, 0.14); }
+
+/* ===== The formula box ===== */
+
+.vcg-formula {
+    font-family: "Courier New", monospace;
+    font-size: 1.0rem;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #f8f2fe;
+    border: 1px solid rgba(122, 0, 230, 0.18);
+    color: #23004C;
+    word-break: break-word;
+    margin: 12px 0;
+}
+
+/* ===== Tables ===== */
+
+table {
+    border-collapse: collapse;
+    margin: 14px 0;
+}
+table th {
+    background: #F4F2F6;
+    color: #23004C;
+    text-align: left;
+    padding: 6px 12px;
+    border-bottom: 2px solid #E4E4E4;
+}
+table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #E4E4E4;
+}
+
+/* ===== Notes ===== */
+
+.vcg-note {
+    padding: 10px 14px;
+    border-left: 4px solid #FE7500;
+    background: #FFF7F0;
+    margin: 14px 0;
+}

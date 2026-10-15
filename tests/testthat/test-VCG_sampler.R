@@ -94,3 +94,32 @@ test_that("VCG_sampler with stratum: returns data frame", {
   expect_true(is.data.frame(result))
   expect_true("VCG" %in% colnames(result))
 })
+
+test_that("VCG_sampler size warnings count the POOL correctly for combine_data() output", {
+  set.seed(1)
+  pool <- data.frame(cov1 = rnorm(60, 10), cov2 = rnorm(60, 5))
+  tg   <- data.frame(cov1 = rnorm(20, 9.5), cov2 = rnorm(20, 4.8))
+  dat  <- combine_data(pool, tg)
+  expect_no_warning(VCG_sampler(treated ~ cov1 + cov2, data = dat, n = 20, plot = FALSE))
+})
+
+test_that("VCG_sampler stops when n is larger than the POOL", {
+  dat <- data.frame(treated = rep(0:1, c(10, 10)), cov1 = rnorm(20))
+  expect_error(suppressWarnings(VCG_sampler(treated ~ cov1, data = dat, n = 15, plot = FALSE)), "larger than")
+  expect_error(VCG_sampler(treated ~ cov1, data = dat, n = 0, plot = FALSE), "positive whole number")
+})
+
+test_that("VCG_sampler with stratum keeps the input row order and rows with missing stratum", {
+  set.seed(2)
+  dat <- data.frame(
+    treated = rep(0:1, c(60, 20)),
+    cov1    = rnorm(80),
+    sex     = rep(c("m", "f"), 40)
+  )
+  dat$sex[1:3] <- NA
+  res <- VCG_sampler(treated ~ cov1 | sex, data = dat, n = 8, plot = FALSE)
+  expect_equal(nrow(res), nrow(dat))
+  expect_equal(res$cov1, dat$cov1)
+  expect_true(all(is.na(res$VCG[1:3])))
+  expect_equal(sum(res$VCG == 1, na.rm = TRUE), 16)
+})

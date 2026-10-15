@@ -31,3 +31,11 @@ test_that("plot_var accepts optional title", {
   p <- plot_var(out, what = "cov1", group = "VCG", title = "My Title")
   expect_s3_class(p, "gg")
 })
+
+test_that("plot_var works with a single, character stratum", {
+  set.seed(5)
+  dat <- data.frame(treated = rep(0:1, c(30, 10)), cov1 = rnorm(40), sex = "m")
+  res <- VCG_sampler(treated ~ cov1 | sex, data = dat, n = 10, plot = FALSE)
+  res$sex_chr <- as.character(res$sex)
+  expect_s3_class(plot_var(res, what = "cov1", stratum = "sex_chr"), "ggplot")
+})

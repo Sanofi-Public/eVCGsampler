@@ -35,3 +35,18 @@ test_that("BestVCGsize errors on interaction formula", {
   dat <- data.frame(treat = rep(0:1, 10), x = rnorm(20), y = rnorm(20))
   expect_error(BestVCGsize(treat ~ x * y, data = dat, plot = FALSE))
 })
+
+test_that("BestVCGsize handles small pools and returns a single NA without a plateau", {
+  set.seed(3)
+  dat <- data.frame(treat = rep(0:1, c(4, 4)), cov1 = rnorm(8))
+  expect_no_warning(res <- BestVCGsize(treat ~ cov1, data = dat, plot = FALSE))
+  expect_length(res, 1)
+})
+
+test_that("BestVCGsize only scans POOL sizes with complete data", {
+  set.seed(4)
+  dat <- data.frame(treat = rep(0:1, c(40, 10)), cov1 = c(rnorm(40), rnorm(10, 2)))
+  dat$cov1[1:5] <- NA
+  expect_no_error(res <- BestVCGsize(treat ~ cov1, data = dat, plot = FALSE))
+  expect_length(res, 1)
+})

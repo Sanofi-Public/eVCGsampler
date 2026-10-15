@@ -30,7 +30,7 @@ robust_scale <- function(x, group = NULL) {
     x <- as.data.frame(x)
     return(as.data.frame(lapply(x, robust_scale, group)))
   }
-  nn <- length(unique(x))
+  nn <- length(unique(x[!is.na(x)]))
   if(is.null(group)){
     idx <- seq_along(x)
   }else{
@@ -42,7 +42,8 @@ robust_scale <- function(x, group = NULL) {
     x <- as.numeric(x)
     x <- x - median(x[idx], na.rm = TRUE)
     mad_val <- mad(x[idx], na.rm = TRUE)
-    if(mad_val == 0) mad_val <- sd(x[idx], na.rm = TRUE)
+    if(is.na(mad_val) || mad_val == 0) mad_val <- sd(x[idx], na.rm = TRUE)
+    if(is.na(mad_val) || mad_val == 0) mad_val <- 1
     x <- x / mad_val
   }
   if(nn==2){

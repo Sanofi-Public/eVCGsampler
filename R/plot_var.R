@@ -45,7 +45,7 @@ plot_var <- function(data, what=NULL, stratum='in_stratum', group='VCG', title='
 
 
   if(!is.null(stratum)){
-    data$in_stratum <- data[,stratum]
+    data$in_stratum <- as.factor(data[,stratum])
     nl <- nlevels(data$in_stratum)
     for(k in 1:nl){
       data_k <- data[which(data$in_stratum==levels(data$in_stratum)[k]), ]
@@ -54,6 +54,7 @@ plot_var <- function(data, what=NULL, stratum='in_stratum', group='VCG', title='
     }
 
     #require(patchwork)
+    if(nl==1) (p <- p1)
     if(nl==2) (p <- p1 / p2)
     if(nl==3) (p <- p1 / p2 / p3)
     if(nl==4) (p <- (p1 | p2) / (p3 | p4))
